@@ -11,11 +11,11 @@ GORBITSA
 
    I follow the specification as given here, with expanded instructions: https://esolangs.org/wiki/GORBITSA  
    As I am a brainfuck interpreter writer, I will note the machine specific things here:
-*      IO is character only.
-*      Output does not print a newline after every character.
-*      Execution stops at an invalid instruction.
-*      EOF is -1 (WHY IS THIS NOT IN THE STANDARD SOMEWHERE?)
-*      Most people will find the behavior of cell size and wrapping to be correct.
+* IO is character only.
+* Output does not print a newline after every character.
+* Execution stops at an invalid instruction.
+* EOF is -1 (WHY IS THIS NOT IN THE STANDARD SOMEWHERE?)
+* Most people will find the behavior of cell size and wrapping to be correct.
 
    I saw a chance to implement a threaded interpreter, and decided to go for it.
 
@@ -41,12 +41,12 @@ GORBITSA
    debugging. It's about having an "OMG FAST!!!1" interpreter, without resorting to complicated optimizations.
 
    Performance Comparison Results, after averaging 10 runs (the standard deviation was less than 1% of the averages):
-*      Best TCO, all others are normalized to this.
-*      Non-setjmp/longjmp threaded interpreter -O2, at 1.5 times slower
-*      Switch -O2, at 1.7 times slower
-*      Setjmp/longjmp threaded interpreter -O2, 2 times slower
-*      Switch -O0, 2.2 times slower
-*      Setjmp/longjmp threaded interpreter -O0, 4 times slower
-*      Non-setjmp/longjmp threaded interpreter -O0, at 8.5 times slower
+* Best TCO, all others are normalized to this.
+* Non-setjmp/longjmp threaded interpreter -O2, at 1.5 times slower
+* Switch -O2, at 1.7 times slower
+* Setjmp/longjmp threaded interpreter -O2, 2 times slower
+* Switch -O0, 2.2 times slower
+* Setjmp/longjmp threaded interpreter -O0, 4 times slower
+* Non-setjmp/longjmp threaded interpreter -O0, at 8.5 times slower
 
 I don't understand that last one, but it was pretty consistent.
