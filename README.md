@@ -17,7 +17,7 @@ GORBITSA
 * EOF is -1 (WHY IS THIS NOT IN THE STANDARD SOMEWHERE?)
 * Most people will find the behavior of cell size and wrapping to be correct.
 
-   I saw a chance to implement a threaded interpreter, and decided to go for it.
+I saw a chance to implement a threaded interpreter, and decided to go for it.
 
    The theory here is that modern computers are really bad at predicting indirect branches. When you
    select the next instruction with a switch, you have one location in your code with that indirect branch,
