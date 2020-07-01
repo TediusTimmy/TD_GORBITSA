@@ -37,6 +37,9 @@ I saw a chance to implement a threaded interpreter, and decided to go for it.
    indirect jump, rather than an indirect call. This means that the stack isn't constantly and wastefully
    growing. In the non-TCO versions, setjmp/longjmp are used to prevent overflowing the stack.
 
+   (Post note: after doing the benchmarking, using setjmp/longjmp to control the stack size was not as beneficial
+   as I had hoped. The results we weird, see below.)
+
    The thing that you can fault me on is that this program is not good for learning, and it is not good for
    debugging. It's about having an "OMG FAST!!!1" interpreter, without resorting to complicated optimizations.
 
