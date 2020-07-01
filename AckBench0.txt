@@ -1,0 +1,332 @@
+Copyright (c) 2020 Thomas DiModica.
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+ 1. Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+ 2. Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+ 3. Neither the name of Thomas DiModica nor the names of other contributors
+    may be used to endorse or promote products derived from this software
+    without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THOMAS DIMODICA AND CONTRIBUTORS ``AS IS'' AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED.  IN NO EVENT SHALL THOMAS DIMODICA OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+SUCH DAMAGE.
+
+
+
+Synthetic benchmark:
+   Compute Ackermann(3, 2) repeatedly. Until it's REALLY SLOW!
+
+The Ackermann function is a schoolbook example of a recursive function that isn't primitive recursive,
+which is to say that one cannot tell from the inputs how many times the function body will execute.
+
+First, a definition:
+   Ackermann(m, n) = { n + 1                                     , when m = 0
+                     { Ackermann(m - 1, 1)                       , when n = 0
+                     { Ackermann(m - 1, Ackermann(m, n - 1))     , otherwise
+
+Ackermann(3, 2) requires recursing down 30 times. It has to invoke itself 30 times to determine the answer.
+
+I chose this because Ackermann is a time-wasting program to run. Its results are trivial to check.
+It will also use an exceptional amount of instructions for a processor that doesn't support a stack.
+So, it will be a nice exercise in the implementation of block-structured programming.
+I was thinking (3, 3), but that requires 62 calls, and I may not have enough memory for that.
+
+      Instruction use:
+   ## ## #  ## ##
+   GORBITSA gorbitsa
+
+This is a GORBITSA-ROM program. Unless I can get the code and expected runtime to fit into RAM.
+   I thought I had it, then I tried to run it in RAM, and found out that its too big,
+   and all of my branch instructions are wrong.
+Conventions:
+   [0]         SP
+   [1]         B
+   [2]         C
+               The B and C registers are not saved between calls.
+               They are solely temporaries within a function.
+
+000: S0  
+001: B80       Goto MAIN
+002: S0        NOP
+               PASCAL_CALL byte Ackermann(byte m, byte n):
+                  stack:
+                           [SP]      RET PC
+                           [SP + 1]  n
+                           [SP + 2]  m
+                           [SP + 3]  RET VAL
+003: G0        Load m      Load SP     Load m by loading the stack pointer,
+004: I2                    Add 2       adding to it to get the location of m,
+005: O1                    Store B     then store this location in a temporary, so that we can
+006: g1                    Load [B]    load m through that temporary.
+007: B15       If 0 == m Goto BASE
+008: G0        Load n      Load SP
+009: I1                    Add 1
+010: O1                    Store B
+011: g1                    Load [B]
+012: B36       If 0 == n Goto SIMPLE
+013: S0  
+014: B49       Goto FULL_RECURSIVE
+                  BASE:
+015: G0        Load n   Load SP
+016: I1                 Add 1
+017: O1                 Store the result in B
+018: g1                 Load [B]
+019: I1        Add 1
+020: O2                 Store the result in C
+021: G0        Store RET VAL     Load SP
+022: I3                          Add 3
+023: O1                          Store in B
+024: G2                          Load C
+025: o1                          Store in [B]
+026: G0        Clear frame from stack     Load SP     This is the Pascal calling convention: callee clears the stack.
+027: I4        Add 4, this stack frame is 4 bytes
+028: O0        Store and done
+029: G0        Return      Load SP
+030: I252                  Add -4
+031: O1                    Store in B                 Now we have the pointer to the return pc in B,
+032: g1                    Load [B]                   dereference it.
+033: O1                    Store in B
+034: S0  
+035: b1                    Unconditional branch to B
+                  SIMPLE:           As this is a tail-call, jump back to the begining, don't perform a call.
+036: G0        Set n to 1     Load SP
+037: I1                       Add 1          This optimization is what functional languages
+038: O1                       Store B        MUST do in order to have any performance while
+039: S1                       Load 1         performing their version of a loop.
+040: o1                       Store [B]
+                  TAIL_CALL:
+041: G0        Set m to m - 1 Load SP
+042: I2                       Add 2
+043: O1                       Store B
+044: g1                       Load [B]
+045: I255                     Add -1
+046: o1                       Store [B]
+047: S0  
+048: B3        Goto Ackermann
+                  FULL_RECURSIVE: If I had a base pointer, I could store m on the stack and expect to get it back later...
+049: G0        CALL Ackermann(m, n - 1)   Load SP
+050: I252                                 Add -4
+051: O0                                   New stack frame established.
+052: I1  
+053: O1                                   Store address of new n in B
+054: I4  
+055: O2                                   Store address of old n in C
+056: g2  
+057: I255
+058: o1                                   Set [B] to [C] - 1
+059: S1  
+060: i1  
+061: i2                                   Increment B and C to point to new m and old m
+062: g2  
+063: o1                                   Set [B] to [C]
+064: S254                                 Change B to point to new return PC           !! DOH! I should have used [0]
+065: i1                                   Subtract 2 from B                            !! It would be a pain to remove these now...
+066: S70                                  Load RETURN    Because the function is loaded into a static location in memory,
+067: o1                                   Store in [B]   we already know where it needs to return. !! Should be [SP]
+068: S0  
+069: B3                                   Goto Ackermann
+                  RETURN:     DANGER! DANGER! DANGER! B and C are now invalid.
+070: G0        Store RET VAL in n         Load SP
+071: I255                                 Add -1
+072: O1                                   Store B
+073: I2                                   Add 2
+074: O2                                   Store C
+075: g1                                   Load [B]
+076: o2                                   Store [C]
+077: S0              The rest of what we want to do, we've already coded as TAIL_CALL above.
+078: B41       Goto TAIL_CALL
+079: S0  
+                  MAIN:
+080: S255
+081: O0        Initialize the stack pointer to the end of memory.
+082: S0  
+083: B93       Goto REAL_MAIN
+                  CALL_ACKERMANN:
+084: G0        Load SP
+085: I252      Add -4
+086: O0        New stack frame established. Assume that m and n have already been set.
+087: S91       Load CALL_RETURN
+088: o0        Store in [SP]
+089: S0  
+090: B3        Goto Ackermann
+                  CALL_RETURN:
+091: S0  
+092: B106      Goto ACKERMANN_RETURN
+                  REAL_MAIN:
+093: G0        Load SP     Load &m into B
+094: I254      Add -2
+095: O1        Store B
+096: I255      Add -1
+097: O2        Store C     Load &n into C
+098: R         Read m
+099: I208      Add -48     This turns a single digit to its numerical version under ASCII
+100: o1        Store m in [B]
+101: R         Read n
+102: I208      Turn to single digit number.
+103: o2        Store in n
+104: S0  
+105: B84       Goto CALL_ACKERMANN
+                  ACKERMANN_RETURN
+106: G0        Load SP
+107: I255      Add -1
+108: O1        Store the address of the returned value in B
+109: g1        Load [B]
+110: I48       Add '0' to turn this back into a number.
+111: T         Print it: keep in mind that numbers larger than 9 will be weird.
+112: S0  
+113: S255      Halt machine.
+114: S0
+115: S0
+116: S0
+117: S0
+118: S0
+119: S0
+120: S0
+121: S0
+122: S0
+123: S0
+124: S0
+125: S0
+126: S0
+127: S0
+128: S0
+129: S0
+130: S0
+131: S0
+132: S0
+133: S0
+134: S0
+135: S0
+136: S0
+137: S0
+138: S0
+139: S0
+140: S0
+141: S0
+142: S0
+143: S0
+144: S0
+145: S0
+146: S0
+147: S0
+148: S0
+149: S0
+150: S0
+151: S0
+152: S0
+153: S0
+154: S0
+155: S0
+156: S0
+157: S0
+158: S0
+159: S0
+160: S0
+161: S0
+162: S0
+163: S0
+164: S0
+165: S0
+166: S0
+167: S0
+168: S0
+169: S0
+170: S0
+171: S0
+172: S0
+173: S0
+174: S0
+175: S0
+176: S0
+177: S0
+178: S0
+179: S0
+180: S0
+181: S0
+182: S0
+183: S0
+184: S0
+185: S0
+186: S0
+187: S0
+188: S0
+189: S0
+190: S0
+191: S0
+192: S0
+193: S0
+194: S0
+195: S0
+196: S0
+197: S0
+198: S0
+199: S0
+200: S0
+201: S0
+202: S0
+203: S0
+204: S0
+205: S0
+206: S0
+207: S0
+208: S0
+209: S0
+210: S0
+211: S0
+212: S0
+213: S0
+214: S0
+215: S0
+216: S0
+217: S0
+218: S0
+219: S0
+220: S0
+221: S0
+222: S0
+223: S0
+224: S0
+225: S0
+226: S0
+227: S0
+228: S0
+229: S0
+230: S0
+231: S0
+232: S0
+233: S0
+234: S0
+235: S0
+236: S0
+237: S0
+238: S0
+239: S0
+240: S0
+241: S0
+242: S0
+243: S0
+244: S0
+245: S0
+246: S0
+247: S0
+248: S0
+249: S0
+250: S0
+251: S0
+252: S0
+253: S0
+254: S0

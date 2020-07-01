@@ -1,0 +1,9 @@
+S0   B80  S0   G0   I2   O1   g1   B15  G0   I1   O1   g1   B36  S0   B49  G0   
+I1   O1   g1   I1   O2   G0   I3   O1   G2   o1   G0   I4   O0   G0   I252 O1   
+g1   O1   S0   b1   G0   I1   O1   S1   o1   G0   I2   O1   g1   I255 o1   S0   
+B3   G0   I252 O0   I1   O1   I4   O2   g2   I255 o1   S1   i1   i2   g2   o1   
+S254 i1   S70  o1   S0   B3   G0   I255 O1   I2   O2   g1   o2   S0   B41  S0   
+S255 O0   S0   B93  G0   I252 O0   S91  o0   S0   B3   S0   B110 S250 O140 S250 
+O141 G0   I254 O1   I255 O2   S51  I208 o1   S50  I208 o2   S0   B84  G0   I255 
+O1   g1   I48  I179 B121 S65  T    S0   B255 G140 I255 O140 B127 S0   B97  G141 
+I255 O141 B255 S250 O140 S0   B97
