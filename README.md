@@ -43,12 +43,12 @@ I saw a chance to implement a threaded interpreter, and decided to go for it.
    The thing that you can fault me on is that this program is not good for learning, and it is not good for
    debugging. It's about having an "OMG FAST!!!1" interpreter, without resorting to complicated optimizations.
 
-   Performance Comparison Results:
-   Setup: compute Ackermann(3, 3), with tail-call optimization, 62500.
-      (My implementation has tail-call optimization.)
-      Do this ten times and average the result.
-         Try to get a run of ten where the standard deviation is less than 1% of the average.
-      Normalize the results with respect to the fastest.
+   Performance Comparison Results:  
+   Setup: compute Ackermann(3, 3), with tail-call optimization, 62500.  
+      (My implementation has tail-call optimization.)  
+      Do this ten times and average the result.  
+         Try to get a run of ten where the standard deviation is less than 1% of the average.  
+      Normalize the results with respect to the fastest.  
 
    Results:                                                                               Time factor:
 * Tail-call optimized -O2                                                             1
@@ -60,7 +60,7 @@ I saw a chance to implement a threaded interpreter, and decided to go for it.
 * Setjmp/longjmp threaded interpreter -O0                                             4
 * Non-setjmp/longjmp threaded interpreter -O0                                         8.5
 
-   Finally, I decided to redo this, using -Og instead of -O0.
+Finally, I decided to redo this, using -Og instead of -O0.
          This flag is GCCs "debugging safe optimizations" flag.
          This is important in seeing the difference between debugging speed and normal speed.
 * Tail-call optimized -O2                                                             1
