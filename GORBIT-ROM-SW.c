@@ -30,14 +30,40 @@ SUCH DAMAGE.
 /*
    An exploration into using a switch for performance comparisons.
 
-   Results, after averaging 10 runs (the standard deviation was less than 1% of the averages):
-      Best TCO, all others are normalized to this.
-      Non-setjmp/longjmp threaded interpreter -O2, at 1.5 times slower
-      Switch -O2, at 1.7 times slower
-      Setjmp/longjmp threaded interpreter -O2, 2 times slower
-      Switch -O0, 2.2 times slower
-      Setjmp/longjmp threaded interpreter -O0, 4 times slower
-      Non-setjmp/longjmp threaded interpreter -O0, at 8.5 times slower
+   Setup: compute Ackermann(3, 3), with tail-call optimization, 62500.
+      (My implementation has tail-call optimization.)
+      Do this ten times and average the result.
+         Try to get a run of ten where the standard deviation is less than 1% of the average.
+      Normalize the results with respect to the fastest.
+
+   Results:                                                                               Time factor:
+      Tail-call optimized -O2                                                             1
+      Tie: non-setjmp/longjmp threaded interpreter -O2, computed goto -O2                 1.5
+      Switch -O2                                                                          1.7
+      Setjmp/longjmp threaded interpreter -O2                                             2
+      Switch -O0                                                                          2.2
+      Computed goto -O0                                                                   2.5
+      Setjmp/longjmp threaded interpreter -O0                                             4
+      Non-setjmp/longjmp threaded interpreter -O0                                         8.5
+
+   Finally, I decided to redo this, using -Og instead of -O0.
+         This flag is GCCs "debugging safe optimizations" flag.
+         This is important in seeing the difference between debugging speed and normal speed.
+      Tail-call optimized -O2                                                             1
+      Tie: non-setjmp/longjmp threaded interpreter -O2, computed goto -Og and -O2         1.5
+         To two decimals: Computed Goto -O2 1.47, Threaded 1.48, Computed Goto -O0 1.53
+      Switch -Og                                                                          1.6
+      Switch -O2                                                                          1.7
+      Setjmp/longjmp threaded interpreter -O2                                             2
+      Setjmp/longjmp threaded interpreter -Og                                             2.6
+      Non-setjmp/longjmp threaded interpreter -Og                                         7.2
+
+   Tail-call optimized is not reported for -O0 or -Og because it immediately crashes.
+
+   I want to talk about debugging performance. The tail-call optimized version is fast,
+   but you can't run it in debugging mode without sacrificing debugging ability.
+   The switch wins out in the gap between the performance between debugging and production
+   code. If debuggability is a driving concern, the performance hit may be worth it.
 */
 
 #include <stdio.h>

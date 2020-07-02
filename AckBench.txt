@@ -44,6 +44,8 @@ It will also use an exceptional amount of instructions for a processor that does
 So, it will be a nice exercise in the implementation of block-structured programming.
 I was thinking (3, 3), but that requires 62 calls, and I may not have enough memory for that.
 
+UPDATE: As I can't get the program to fit into RAM, I will do Ackermann(3, 3).
+
       Instruction use:
    ## ## #  ## ##
    GORBITSA gorbitsa
@@ -166,10 +168,10 @@ Conventions:
 091: S0  
 092: B110      Goto ACKERMANN_RETURN
                   REAL_MAIN:
-093: S10 
-094: O140
-095: S10 
-096: O141
+093: S250
+094: O3  
+095: S250
+096: O4  
                   TOP_OF_LOOP:
 097: G0        Load SP     Load &m into B
 098: I254      Add -2
@@ -179,7 +181,7 @@ Conventions:
 102: S51       Read m
 103: I208      Add -48     This turns a single digit to its numerical version under ASCII
 104: o1        Store m in [B]
-105: S50       Read n
+105: S51       Read n
 106: I208      Turn to single digit number.
 107: o2        Store in n
 108: S0  
@@ -190,26 +192,26 @@ Conventions:
 112: O1        Store the address of the returned value in B
 113: g1        Load [B]
 114: I48       Add '0' to turn this back into a number.
-115: I179      Make sure its 'M'
-116: B121      If 'M', Goto AROUND
-117: S65 
+115: I147      Make sure its 'm'
+116: B121      If 'm', Goto AROUND
+117: S66 
 118: T   
 119: S0  
 120: B255
                   AROUND:
-121: G140
+121: G3  
 122: I255
-123: O140
+123: O3  
 124: B127      Goto ONE_MORE_TIME
 125: S0  
 126: B97 
                   ONE_MORE_TIME:
-127: G141
+127: G4  
 128: I255
-129: O141
+129: O4  
 130: B135      END
-131: S10 
-132: O140
+131: S250
+132: O3  
 133: S0  
 134: B97 
 135: S0
